@@ -90,7 +90,7 @@ While this works, the code is a bit clunky. I see code like this (or variations 
 
 Note that this results in ***a vector of named elements***, rather than a dataset, so it's not so easy to extract the element you might want. Trying the `{tidyverse}` `select` statement results in an error.
 
-```{r}
+```{r }
 counts %>%
   select(STUDYID)
 ```
@@ -129,13 +129,14 @@ Let's play ***HUNT THE MISSING VALUE...***
 
 ```{r}
 randomNumberArray <- array(rnorm(70), dim = c(7, 10))
+randomNumberArray
 ## Make one number at random missing
 randomNumberArray[sample(1:7,1), sample(1:10,1)] <- NA
-
+ 
 nonMissing <- function(vector){
-  sum(!is.na(vector))
+   sum(!is.na(vector))
 }
-
+ 
 round(randomNumberArray,2)
 ```
 
@@ -328,4 +329,66 @@ Using each of these packages is a little out of scope for this Mini-Project, but
 ## Challenge
 
 Apply the `adsl_counts` function that you developed in Mini-Project 7 to the `adsl_saf` data here, to show the counts of `SEX` by `TRT01A` for each value of `RACE`.
+```{r}
+adsl_counts <- function(data) {
+  adsl_saf <- data %>%
+    filter(SAFFL == "Y")
+  
+  Big_N_cnt <-  adsl_saf   %>%
+    group_by( TRT01AN, TRT01A  ) %>%
+    count(name = "N")
+  Big_N_cnt
+  
+  small_n_cnt <-  adsl_saf  %>%
+    group_by( TRT01AN, TRT01A,  SEX) %>%
+    count(name = "n")
+  small_n_cnt
+  
+  adsl_mrg_cnt <- small_n_cnt %>%
+    left_join(Big_N_cnt, by = c("TRT01A", "TRT01AN")) %>%
+    mutate(perc = round((n/N)*100, digits=1)) %>%
+    mutate(perc_char = format(perc, nsmall=1)) %>%
+    mutate(npct = paste(n, 
+                        paste0( "(", perc_char, ")" ) 
+                        ) 
+           ) %>%
+    mutate(SEX = recode(SEX, 
+                        "M" = "Male",
+                        "F" = "Female")) %>%
+    ungroup() %>%
+    select(TRT01A, SEX, npct) %>%
+    pivot_wider(names_from = TRT01A, values_from = npct)
+  
+  adsl_mrg_cnt
+}
+```
+
+1ST METHOD
+
+```{r}
+results_by_race <- bind_rows(
+  lapply(unique(adsl_saf$RACE), function(race) {
+    subset_data <- filter(adsl_saf, RACE == race)
+    result <- adsl_counts(subset_data)
+    result$RACE <- race
+    return(result)
+  })
+) %>%
+  relocate(RACE)
+
+results_by_race
+```
+
+2ND METHOD
+
+```{r}
+results_by_race <- adsl_saf %>%
+  group_by(RACE) %>%
+  nest() %>%
+  mutate(summary = map(data, adsl_counts)) %>%
+  select(RACE, summary) %>%
+  unnest(summary)
+
+results_by_race
+```
 
