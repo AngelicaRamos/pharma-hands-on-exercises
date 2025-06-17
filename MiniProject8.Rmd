@@ -363,7 +363,7 @@ adsl_counts <- function(data) {
 }
 ```
 
-1ST METHOD
+1ST METHOD: USING lapply()
 
 ```{r}
 results_by_race <- bind_rows(
@@ -379,7 +379,7 @@ results_by_race <- bind_rows(
 results_by_race
 ```
 
-2ND METHOD
+2ND METHOD: USING map()
 
 ```{r}
 results_by_race <- adsl_saf %>%
