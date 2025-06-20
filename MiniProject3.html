@@ -2863,9 +2863,9 @@ a function. Functions in R are a bit like Macros in SAS.</p>
 <pre class="r"><code># age_stat&lt;- adsl_eff %&gt;%
 #   group_by(TRT01AN,TRT01A,SEX) %&gt;%
 #   summarize(mean = mean( ) %&gt;% round(digits = 1) %&gt;% format(nsmall=1)  ,
-#             sd = sd( ) %&gt;% round(digits = 1) %&gt;% format(nsmall = 1), 
-#             med = median( )  ,              
-#             min = min( ), 
+#             sd = sd( ) %&gt;% round(digits = 1) %&gt;% format(nsmall = 1),
+#             med = median( )  ,
+#             min = min( ),
 #             max = max( ),
 #             n = n())
 # 
@@ -2875,9 +2875,9 @@ a function. Functions in R are a bit like Macros in SAS.</p>
 #   adsl_saf %&gt;%
 #     group_by(TRT01AN,TRT01A,SEX) %&gt;%
 #     summarize(mean = mean( ) %&gt;% round(digits = 1) %&gt;% format(nsmall=1)  ,
-#               sd = sd( ) %&gt;% round(digits = 1) %&gt;% format(nsmall = 1), 
-#               med = median( )  ,              
-#               min = min( ), 
+#               sd = sd( ) %&gt;% round(digits = 1) %&gt;% format(nsmall = 1),
+#               med = median( )  ,
+#               min = min( ),
 #               max = max( ),
 #               n = n())
 # }</code></pre>
@@ -2917,9 +2917,9 @@ It’s a bit like using a Macro variable in SAS.</p>
   .data %&gt;%
     group_by(TRT01AN,TRT01A,SEX) %&gt;%
     summarize(mean = mean({{variable}}) %&gt;% round(digits = 1) %&gt;% format(nsmall=1)  ,
-              sd = sd({{variable}}) %&gt;% round(digits = 1) %&gt;% format(nsmall = 1), 
-              med = median({{variable}})  ,              
-              min = min({{variable}}), 
+              sd = sd({{variable}}) %&gt;% round(digits = 1) %&gt;% format(nsmall = 1),
+              med = median({{variable}})  ,
+              min = min({{variable}}),
               max = max({{variable}}),
               n = n())
 }

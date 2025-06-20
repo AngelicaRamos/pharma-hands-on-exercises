@@ -211,31 +211,31 @@ If you need to copy and paste code 3 times or more it's time to write a function
 You can quickly convert from code like this:
 
 ```{r}
-age_stat<- adsl_eff %>%
-  group_by(TRT01AN,TRT01A,SEX) %>%
-  summarize(mean = mean( ) %>% round(digits = 1) %>% format(nsmall=1)  ,
-            sd = sd( ) %>% round(digits = 1) %>% format(nsmall = 1),
-            med = median( )  ,
-            min = min( ),
-            max = max( ),
-            n = n())
-
-age_stat
+# age_stat<- adsl_eff %>%
+#   group_by(TRT01AN,TRT01A,SEX) %>%
+#   summarize(mean = mean( ) %>% round(digits = 1) %>% format(nsmall=1)  ,
+#             sd = sd( ) %>% round(digits = 1) %>% format(nsmall = 1),
+#             med = median( )  ,
+#             min = min( ),
+#             max = max( ),
+#             n = n())
+# 
+# age_stat
 ```
 
 To a function like this:
 
 ```{r, eval = FALSE}
-varSummary <- function(adsl_eff, TRT01AN, TRT01A, SEX) {
-  adsl_saf %>%
-    group_by(TRT01AN,TRT01A,SEX) %>%
-    summarize(mean = mean( ) %>% round(digits = 1) %>% format(nsmall=1)  ,
-              sd = sd( ) %>% round(digits = 1) %>% format(nsmall = 1),
-              med = median( )  ,
-              min = min( ),
-              max = max( ),
-              n = n())
-}
+# varSummary <- function(adsl_eff, TRT01AN, TRT01A, SEX) {
+#   adsl_saf %>%
+#     group_by(TRT01AN,TRT01A,SEX) %>%
+#     summarize(mean = mean( ) %>% round(digits = 1) %>% format(nsmall=1)  ,
+#               sd = sd( ) %>% round(digits = 1) %>% format(nsmall = 1),
+#               med = median( )  ,
+#               min = min( ),
+#               max = max( ),
+#               n = n())
+# }
 ```
 
 using the "Extract function" in RStudio IDE's "Code" menu. You can then tidy this code to change the function arguments. You then want to abstract the code so that the user running the code has the ability to change the things that they need to change. This abstraction means that writing the code is a little more complex within the tidyverse - you need to refer to the variable within a dataset, and stop R from trying to find that variable as an object in your environment (top right tab in RStudio IDE).
@@ -265,9 +265,9 @@ varSummary <- function(.data = NULL, variable = NULL) {
   .data %>%
     group_by(TRT01AN,TRT01A,SEX) %>%
     summarize(mean = mean({{variable}}) %>% round(digits = 1) %>% format(nsmall=1)  ,
-              sd = sd({{variable}}) %>% round(digits = 1) %>% format(nsmall = 1), 
-              med = median({{variable}})  ,              
-              min = min({{variable}}), 
+              sd = sd({{variable}}) %>% round(digits = 1) %>% format(nsmall = 1),
+              med = median({{variable}})  ,
+              min = min({{variable}}),
               max = max({{variable}}),
               n = n())
 }
