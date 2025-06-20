@@ -137,7 +137,6 @@ Age_trans <- pivot_wider(age_n_pct,
                          values_from = npct, 
                          values_fill = "0",
                          names_sep = "_")
-
 age_cat <- rename(Age_trans, category=AGEGR1)
 age_cat %>%
   arrange(category)
@@ -223,9 +222,140 @@ dm_allcomb
 ## Challenges: Take the following actions to match with the Demographic table.
 
 1.  Reorder the age variables to be in the correct order (<65, 65-80, >80)
+```{r}
+age_cat = age_cat |>
+      mutate(category = factor(category,
+                          levels = c("<65", "65-80",">80"))) |>
+      arrange(category)
+
+dm_allcomb <- bind_rows(age_cat, agestat_cat)  
+dm_allcomb
+
+```
+
 
 2.  Move N before Age- categories.
+```{r}
+dm_allcomb = dm_allcomb |>
+      mutate(category = factor(category,
+                          levels = c("N", "<65", "65-80",">80", 
+                                     "Mean", "Median", "Std Dev", "Range(min,max)"))) |>
+      arrange(category)
+dm_allcomb
+```
 
 3.  Add Ethnicity and Race.
+```{r}
+adsl_eff |> filter(!is.na(RACE))
+
+Big_N_cnt <- adsl_eff %>%
+  group_by( TRT01AN, TRT01A  ) %>%
+  count(name = "N")
+Big_N_cnt
+
+small_n_cnt <- adsl_eff %>%
+  group_by( TRT01AN, TRT01A,  SEX ) %>%
+  count(name = "n")
+small_n_cnt
+
+Race_N_cnt <- adsl_eff %>%
+  group_by(TRT01AN, TRT01A, RACE) %>%
+  count(name = "race_total")
+Race_N_cnt
+
+race_n_cnt <- adsl_eff %>%
+  group_by(TRT01AN, TRT01A, SEX, RACE) %>%
+  count(name = "race_n")
+race_n_cnt
+
+race_mrg_cnt <- race_n_cnt %>% 
+  left_join(Race_N_cnt, 
+            by = c("TRT01AN", "TRT01A", "RACE"))
+race_mrg_cnt
+
+race_mrg_cnt2 <- race_mrg_cnt %>% 
+  left_join(Big_N_cnt, 
+            by = c("TRT01AN", "TRT01A"))
+race_mrg_cnt2
+
+race_mrg_cnt3 <- race_mrg_cnt2 %>% 
+  left_join(small_n_cnt, 
+            by = c("TRT01A", "TRT01AN", "SEX"))
+
+race_mrg_cnt3 <- ungroup(race_mrg_cnt3)
+race_mrg_cnt3
+
+race_data_new <- race_mrg_cnt3 %>% 
+  mutate(perc_tot = round((race_total/N)*100, 1)) %>%                 
+  mutate(perc_race = round((race_n/n)*100,1))
+race_data_new
+
+race_pct <- race_data_new %>%
+  mutate(perc_tchar = format(perc_tot, nsmall = 1)) %>%
+  mutate(perc_rchar = format(perc_race, nsmall = 1))
+race_pct
+
+race_n_pct <- race_pct %>%
+  mutate(npct = paste(race_n, paste0("(", perc_rchar, ")"))) %>% 
+  select(RACE, TRT01A, SEX, npct)
+
+Race_trans <- pivot_wider(race_n_pct, 
+                         names_from = c(TRT01A,SEX), 
+                         values_from = npct, 
+                         values_fill = "0",
+                         names_sep = "_")
+race_cat <- rename(Race_trans, category=RACE)
+race_cat
+race_cat %>%
+  arrange(category)
+
+age_stat <- adsl_eff %>%
+  group_by(TRT01AN,TRT01A,SEX) %>%
+  summarize(mean = mean(AGE) %>% round(digits = 1) %>% format(nsmall=1)  ,
+            sd = sd(AGE) %>% round (digits=1) %>% format(nsmall=1),  
+            med = median(AGE) %>% round (digits=1) %>% format(nsmall=1),              
+            min = min(AGE) %>% format(nsmall=1), 
+            max = max(AGE) %>% format(nsmall=1),
+           n = n()%>% format(nsmall=0))
+age_stat2 <-age_stat %>%
+  mutate(range_minmax= paste0("(",min, ",", max, ")"))
+age_stat2
+
+desc_stat_long <- age_stat2 %>%
+ ungroup() %>%
+  select("TRT01A", "SEX", "n", "mean", "med", "sd", "range_minmax") %>% 
+  mutate(across(where(is.numeric), .fns = as.character)) %>%
+  pivot_longer(-c("TRT01A", "SEX"), names_to ="category", values_to = "values" )
+desc_stat_long
+agestat_cat <- desc_stat_long %>%
+  pivot_wider(names_from = c(TRT01A, SEX), values_from = values) %>%
+  mutate(category = case_when(category == "n" ~ "N",
+                            category == "med" ~ "Median", 
+                              category == "mean" ~ "Mean", 
+                             category == "sd" ~ "Std Dev", 
+                             category == "range_minmax" ~ "Range(min,max)"))
+agestat_cat
+
+dm_allcomb.race <- bind_rows(race_cat, agestat_cat)
+
+dm_allcomb.race <- dm_allcomb.race |>
+      mutate(category = factor(category,
+                          levels = c("N", "AMERICAN INDIAN OR ALASKA NATIVE", "BLACK OR AFRICAN AMERICAN","WHITE", "Mean", "Median", "Std Dev", "Range(min,max)"))) |>
+      arrange(category)
+
+dm_allcomb.race
+
+# 
+# 
+# 
+# eth_cnt <- adsl_eff |> 
+#           group_by(TRT01AN, TRT01A, ETHNIC) |>
+#           count(name="n") |>
+#   ungroup() |>
+#   complete(nesting(TRT01A, TRT01AN), ETHNIC, fill = list(n=0))
+# eth_cnt
+```
+
+
 
 Save the .RMD file on your desktop and click on the "Knit" button at the top of the file to render an HTML version of this document.
