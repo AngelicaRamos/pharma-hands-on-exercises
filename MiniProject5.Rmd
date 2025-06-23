@@ -95,7 +95,7 @@ In Step 4 above, we defined a `group` mapping to show data for each level of `TR
 
 ```{r}
 plot1 <- PR %>%
-  ggplot(data = PR, mapping = aes(x=ADY, y=AVAL, group =  )) +
+  ggplot(data = PR, mapping = aes(x=ADY, y=AVAL, group =TRTA)) +
   geom_line()
 
 plot1
@@ -109,10 +109,10 @@ Change the text in the `labs()` statement below to make sensible titles and axes
 
 ```{r}
 plot2 <- plot1 + 
-  labs(title = "Plot Title",
+  labs(title = "Heart Rates across Study Days",
        subtitle = "Plot subtitle",
-       x = "X-axis label",
-       y = "Y-axis label",
+       x = "Study Day",
+       y = "Heart Rate",
        caption = paste("Plot created on:",Sys.Date()))
 plot2
 ```
@@ -133,6 +133,10 @@ The next thing we might want to do is to split the above plot (which shows ALL s
 plot4 <- plot3 +
   facet_wrap(facets = "TRTA")
 plot4
+
+plot4_1 <- plot3 +
+  facet_grid(rows = "TRTA")
+plot4_1
 ```
 
 Now that you know how, you can employ ANY variable to split the plot e.g. SEX, PERIOD, ...
@@ -297,10 +301,88 @@ SysBP_plot +
 Do the same for Diastolic BP and Temperature. Ensure that the axes labels match the type of data used.\
 Update `plot4` for the new endpoint.
 
+```{r}
+DiaBP <- ADVS  %>%
+  filter(PARAMN == 2)
+
+DiaBP_plot <- plot4 %+%
+  DiaBP
+
+xLab <- quo_name(DiaBP_plot$mapping$x)
+yLab <- quo_name(DiaBP_plot$mapping$y)
+groupLab <- quo_name(DiaBP_plot$mapping$group)
+
+study <- uniqueVal(DiaBP_plot$data$STUDYID)
+measure <- uniqueVal(DiaBP_plot$data$PARAM)
+
+
+xLab <- ifelse(xLab == "ADY", "Analysis Relative Day", xLab)
+groupLab <- case_when(groupLab == "USUBJID" ~ "Subject", 
+                      groupLab == "TRTA" ~ "Treatment",
+                      TRUE ~ groupLab)
+
+DiaBP_plot + 
+  labs(title = glue::glue("Study {study}"),
+       subtitle = glue::glue("Plot of {measure} by {groupLab}"),
+       x = xLab,
+       y = glue::glue("{measure}"))
+
+
+Temp <- ADVS  %>%
+  filter(PARAMN == 6)
+
+Temp_plot <- plot4 %+%
+  Temp
+
+xLab <- quo_name(Temp_plot$mapping$x)
+yLab <- quo_name(Temp_plot$mapping$y)
+groupLab <- quo_name(Temp_plot$mapping$group)
+
+study <- uniqueVal(Temp_plot$data$STUDYID)
+measure <- uniqueVal(Temp_plot$data$PARAM)
+
+
+xLab <- ifelse(xLab == "ADY", "Analysis Relative Day", xLab)
+groupLab <- case_when(groupLab == "USUBJID" ~ "Subject", 
+                      groupLab == "TRTA" ~ "Treatment",
+                      TRUE ~ groupLab)
+
+Temp_plot + 
+  labs(title = glue::glue("Study {study}"),
+       subtitle = glue::glue("Plot of {measure} by {groupLab}"),
+       x = xLab,
+       y = glue::glue("{measure}"))
+```
+
 ## Extra challenge
 
 Read in vital signs data from another study which uses the `VS` or `ADVS` dataset standards. What code needs to change when you produce Pulse Rate plot for the new dataset (compared to the Pulse Rate plot which uses data values to determine labels)?
 
 ```{r}
 sessioninfo::session_info()
+Pulse <- ADVS |> filter(PARAMCD == "PULSE")
+
+Pulse_plot <- plot4 %+%
+  Pulse
+
+xLab <- quo_name(Pulse_plot$mapping$x)
+yLab <- quo_name(unique(Pulse$PARAM))
+groupLab <- quo_name(Pulse_plot$mapping$group)
+
+study <- uniqueVal(Pulse_plot$data$STUDYID)
+measure <- uniqueVal(Pulse_plot$data$PARAM)
+
+
+xLab <- ifelse(xLab == "ADY", "Analysis Relative Day", xLab)
+groupLab <- case_when(groupLab == "USUBJID" ~ "Subject", 
+                      groupLab == "TRTA" ~ "Treatment",
+                      TRUE ~ groupLab)
+
+Pulse_plot + 
+  labs(title = glue::glue("Study {study}"),
+       subtitle = glue::glue("Plot of {measure} by {groupLab}"),
+       x = xLab,
+       y = glue::glue("{measure}"))
+
+
 ```
